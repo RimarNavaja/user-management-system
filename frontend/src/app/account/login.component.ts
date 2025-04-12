@@ -6,7 +6,6 @@ import {
   Validators,
 } from "@angular/forms";
 import { first } from "rxjs/operators";
-
 import { AccountService, AlertService } from "@app/_services";
 
 @Component({ templateUrl: "login.component.html" })

@@ -41,7 +41,7 @@ function model(sequelize) {
         },
         scopes: {
             // Include hash with this scope
-            withHash: { attributes: {} }
+            withHash: { attributes: {}, }
         }
     };
 

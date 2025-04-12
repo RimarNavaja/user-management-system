@@ -26,8 +26,8 @@ function authorize(roles = []) {
 
             // Authentication and authorization successful
             req.user.role = account.role;
-            req.user.ownsToken = token => !!token.accountId && token.accountId === req.user.id;
-            
+            const refreshTokens = await account.getRefreshToken();
+            req.user.ownsToken = token => !!refreshTokens.find(x => x.token === token);
             next();
         }
     ];

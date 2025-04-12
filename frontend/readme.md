@@ -7,7 +7,7 @@ A full-stack application for managing user accounts with features like email sig
 ## Installation
 
 1. Clone the repository:
-   git clone https://github.com/your-username/user-management-system.gitLinks to an external site.
+   git clone https://github.com/RimarNavaja/user-management-system.git to an external site.
 2. Install dependencies:
    npm install
 3. Start the backend server:

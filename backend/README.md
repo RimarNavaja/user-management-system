@@ -17,15 +17,22 @@ The code follows a pretty standard structure:
 ```
 backend/
 ├── _helpers/           # Utility stuff
+│   ├── db.js           # Database connection with Sequelize
+│   ├── role.js         # Role definitions (Admin/User)
+│   ├── send-email.js   # Email sending functionality
+│   └── swagger.js      # API documentation setup
 ├── _middleware/        # Express middleware
+│   ├── authorize.js    # JWT authorization & role checking
+│   ├── error-handler.js # Global error handling
+│   └── validate-request.js # Request validation
 ├── accounts/           # All the account-related code
-│   ├── account.model.js 
-│   ├── refresh-token.model.js
-│   ├── account.service.js      # Where the magic happens
-│   └── accounts.controller.js  # Routes and request handling
-├── config.json         # Settings for DB, email, etc.
-├── server.js           # Starts everything up
-└── swagger.yaml        # API documentation
+│   ├── account.model.js # Database schema for users
+│   ├── refresh-token.model.js # Schema for refresh tokens
+│   ├── account.service.js # Business logic implementation
+│   └── accounts.controller.js # API route handlers
+├── config.json         # Settings for DB, JWT secret, email
+├── server.js           # Express server setup
+└── swagger.yaml        # API documentation specs
 ```
 
 ## Getting started
@@ -38,7 +45,7 @@ backend/
 6. Fire it up with `npm start` (or `npm run start:dev` if you're making changes)
 7. Check if it's working by going to http://localhost:4000/api-docs
 
-## My implementation of registration and authentication
+## What I've implemented
 
 ### User Sign-Up
 The sign-up process is pretty cool - the first person to register automatically becomes an Admin (so you might want to register yourself first!). Everyone else gets the regular User role.
@@ -71,16 +78,46 @@ This approach gives us good security while keeping users logged in. The refresh 
 
 If you're testing this and get a "token expired" error, just call the refresh-token endpoint to get a new JWT.
 
+### Password Reset Flow
+I've implemented a complete password reset flow:
+
+1. User requests password reset with their email (`/accounts/forgot-password`)
+2. If the email exists, a reset token is generated and sent by email
+3. User receives an email with a reset link/token valid for 24 hours
+4. User provides the token and new password (`/accounts/reset-password`)
+5. System verifies the token and updates the password
+
+The whole flow is designed to be secure - we don't reveal if an email exists in the system, and tokens expire after a set time.
+
+### Email Notifications
+The system sends different emails for various actions:
+- Verification emails for new registrations
+- "Already registered" emails when someone tries to register with an existing email
+- Password reset emails with secure tokens
+
+Each email is properly formatted with HTML and contains clear instructions for the user.
+
+## Security Considerations
+- Passwords are hashed using bcrypt with strong salting
+- JWT tokens expire after 15 minutes to limit damage from token theft
+- Refresh tokens use HTTP-only cookies to prevent XSS attacks
+- Token rotation ensures each refresh token can only be used once
+- Database queries use parameterized queries via Sequelize to prevent SQL injection
+- Error messages are intentionally vague to prevent information leakage
+
 ## A few tips from my experience
 - When testing with Postman, remember to enable "cookies" in the settings to properly handle refresh tokens
 - If you're getting database connection errors, check that your MySQL service is running
 - The error messages are intentionally vague for security (e.g., "email or password is incorrect" instead of specifying which one)
 - For quick testing, I found that using an Ethereal email account saves a ton of time
+- Set the `alter: true` option in db.js to automatically update your database schema during development
 
 ## What to improve next
 - Add rate limiting to prevent brute force attacks
 - Set up proper logging for security audits
 - Maybe add social login options (Google, Facebook, etc.)
+- Implement account lockout after failed login attempts
+- Add two-factor authentication for enhanced security
 
 If you have any questions about my part of the implementation, feel free to reach out! Hope this helps you understand how the authentication system works.
 

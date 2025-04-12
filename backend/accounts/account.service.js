@@ -30,12 +30,14 @@ async function authenticate({ email, password, ipAddress }) {
         throw 'Email or password is incorrect';
     }
 
+    // Authentication successful, generate jwt and refresh tokens
     const jwtToken = generateJwtToken(account);
     const refreshToken = generateRefreshToken(account, ipAddress);
 
     await refreshToken.save();
 
-    return {
+    // Return basic details and tokens
+    return { 
         ...basicDetails(account),
         jwtToken,
         refreshToken: refreshToken.token
@@ -64,32 +66,40 @@ async function refreshToken({ token, ipAddress }) {
 
 async function revokeToken({ token, ipAddress }) {
     const refreshToken = await getRefreshToken(token);
-
+    
     refreshToken.revoked = Date.now();
     refreshToken.revokedByIp = ipAddress;
     await refreshToken.save();
 }
 
 async function register(params, origin) {
+    // Validate
     if (await db.Account.findOne({ where: { email: params.email } })) {
+        // Send already registered error in email to prevent account enumeration
         return await sendAlreadyRegisteredEmail(params.email, origin);
     }
 
     const account = new db.Account(params);
+    
+    // First registered account is an admin
     const isFirstAccount = (await db.Account.count()) === 0;
     account.role = isFirstAccount ? Role.Admin : Role.User;
     account.verificationToken = randomTokenString();
+
+    // Hash password
     account.passwordHash = await hash(params.password);
 
     await account.save();
+
+    // Send email
     await sendVerificationEmail(account, origin);
 }
 
 async function verifyEmail({ token }) {
     const account = await db.Account.findOne({ where: { verificationToken: token } });
-
+    
     if (!account) throw 'Verification failed';
-
+    
     account.verified = Date.now();
     account.verificationToken = null;
     await account.save();
@@ -98,36 +108,34 @@ async function verifyEmail({ token }) {
 async function forgotPassword({ email }, origin) {
     const account = await db.Account.findOne({ where: { email } });
 
-    if (!account) return; // Silent return to prevent email enumeration
+    // Return null if account doesn't exist 
+    if (!account) return;
 
+    // Generate reset token that expires in 1 day
     account.resetToken = randomTokenString();
-    account.resetTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    account.resetTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
     await account.save();
 
     await sendPasswordResetEmail(account, origin);
 }
 
 async function validateResetToken({ token }) {
-    const account = await db.Account.findOne({
-        where: {
-            resetToken: token,
-            resetTokenExpires: { [Op.gt]: Date.now() }
-        }
+    const account = await db.Account.findOne({ 
+        where: { 
+            resetToken: token, 
+            resetTokenExpires: { [Op.gt]: Date.now() } 
+        } 
     });
-
+    
     if (!account) throw 'Invalid token';
+
+    return account;
 }
 
 async function resetPassword({ token, password }) {
-    const account = await db.Account.findOne({
-        where: {
-            resetToken: token,
-            resetTokenExpires: { [Op.gt]: Date.now() }
-        }
-    });
+    const account = await validateResetToken({ token });
 
-    if (!account) throw 'Invalid token';
-
+    // Update password and expiration
     account.passwordHash = await hash(password);
     account.passwordReset = Date.now();
     account.resetToken = null;
@@ -188,14 +196,13 @@ async function getAccount(id) {
 
 async function getRefreshToken(token) {
     const refreshToken = await db.RefreshToken.findOne({ where: { token } });
-    if (!refreshToken || !refreshToken.isActive) throw 'Invalid token';
+    if (!refreshToken || refreshToken.isActive) throw 'Invalid token';
     return refreshToken;
 }
 
 async function hash(password) {
     return await bcrypt.hash(password, 10);
 }
-
 
 function generateJwtToken(account) {
     return jwt.sign({ sub: account.id, id: account.id }, config.secret, { expiresIn: '15m' });
@@ -215,8 +222,8 @@ function randomTokenString() {
 }
 
 function basicDetails(account) {
-    const { id, title, firstName, lastName, email, role, created, updated, isVerified } = account;
-    return { id, title, firstName, lastName, email, role, created, updated, isVerified };
+    const { id, email, firstName, lastName, role, status, created, updated, isVerified } = account;
+    return { id, email, firstName, lastName, role, status, created, updated, isVerified };
 }
 
 async function sendVerificationEmail(account, origin) {

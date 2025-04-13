@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "module": "es2020",
+    "types": []
+  }
+}
+// This file is used to configure TypeScript for the frontend part of the application.
+// It extends the base TypeScript configuration file (tsconfig.base.json) and specifies additional options.

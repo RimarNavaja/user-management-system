@@ -4,9 +4,9 @@ import { AccountService } from '@app/_services';
 
 @Component({ templateUrl: 'home.component.html' })
 export class HomeComponent {
-    account: any;
+    account: this.accountService.accountValue;
 
     constructor(private accountService: AccountService) {
-        this.account = this.accountService.accountValue;
+        
     }
 }

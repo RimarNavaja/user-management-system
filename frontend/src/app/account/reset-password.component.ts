@@ -81,7 +81,7 @@ export class ResetPasswordComponent implements OnInit {
 
     this.loading = true;
     this.accountService
-      .resetPasswrod(
+      .resetPassword(
         this.token,
         this.f.password.value,
         this.f.confirmPassword.value

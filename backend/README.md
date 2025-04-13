@@ -1,133 +1,168 @@
 # User Management System - Backend
 
-## What's this all about?
-Hey there! This is the backend part of our User Management System built with Node.js and MySQL. I've implemented the email sign-up, verification, and authentication features. This API handles all the user account stuff like registering new users, verifying their emails, logging them in securely, and managing their accounts.
+## Introduction
+A full-stack application for managing user accounts with features like email sign-up, verification, authentication, role-based authorization, and CRUD operations. This backend API built with Node.js and MySQL provides comprehensive user account management functionality.
 
-## What can this API do?
-- Register new users and send verification emails ✉️
-- Verify user emails with secure tokens 🔒
-- Handle user login with JWT (those fancy tokens that keep you logged in) 🔑
-- Support different user roles (Admin/User)
-- Let users reset their password when they inevitably forget it 🤦‍♂️
-- Manage user accounts with all the usual CRUD operations
-- Comes with nice API docs via Swagger
+## Installation
+1. Clone the repository:
+   ```
+   git clone https://github.com/your-username/user-management-system.git
+   ```
 
-## How it's organized
-The code follows a pretty standard structure:
-```
-backend/
-├── _helpers/           # Utility stuff
-│   ├── db.js           # Database connection with Sequelize
-│   ├── role.js         # Role definitions (Admin/User)
-│   ├── send-email.js   # Email sending functionality
-│   └── swagger.js      # API documentation setup
-├── _middleware/        # Express middleware
-│   ├── authorize.js    # JWT authorization & role checking
-│   ├── error-handler.js # Global error handling
-│   └── validate-request.js # Request validation
-├── accounts/           # All the account-related code
-│   ├── account.model.js # Database schema for users
-│   ├── refresh-token.model.js # Schema for refresh tokens
-│   ├── account.service.js # Business logic implementation
-│   └── accounts.controller.js # API route handlers
-├── config.json         # Settings for DB, JWT secret, email
-├── server.js           # Express server setup
-└── swagger.yaml        # API documentation specs
-```
+2. Install Node.js and npm from https://nodejs.org/
 
-## Getting started
-1. Make sure you have Node.js and MySQL installed
-2. Clone the repo
-3. Run `npm install` to get all the dependencies
-4. Set up your MySQL database credentials in `config.json` 
-   (Pro tip: double-check your password - spent hours debugging once because of a typo here 😅)
-5. For email testing, I recommend Ethereal (https://ethereal.email/) - super easy to set up!
-6. Fire it up with `npm start` (or `npm run start:dev` if you're making changes)
-7. Check if it's working by going to http://localhost:4000/api-docs
+3. Install MySQL Community Server from https://dev.mysql.com/downloads/mysql/
 
-## What I've implemented
+4. Navigate to the backend directory:
+   ```
+   cd user-management-system/backend
+   ```
 
-### User Sign-Up
-The sign-up process is pretty cool - the first person to register automatically becomes an Admin (so you might want to register yourself first!). Everyone else gets the regular User role.
+5. Install dependencies:
+   ```
+   npm install
+   ```
 
-How it works:
-- Call `POST /accounts/register` with user details
-- System checks if the email is already used
-- Password gets encrypted (never store plain passwords!)
-- A verification token is generated and emailed to the user
-- User data is saved to the database
+6. Configure MySQL database settings in `config.json`
 
-Watch out for: Make sure your email configuration is correct, otherwise verification emails won't be sent and users will be stuck!
+7. Configure email SMTP settings in `config.json` (Ethereal recommended for testing)
 
-### Email Verification
-After registering, users need to verify their email before they can log in. This helps prevent fake accounts and ensures we have a valid email address.
+8. Start the backend server:
+   ```
+   npm start
+   ```
 
-How to test this:
-1. Register a new account
-2. Check the verification email (or console if using Ethereal)
-3. Use the token to verify the account with `POST /accounts/verify-email`
+9. For development with auto-restart:
+   ```
+   npm run start:dev
+   ```
 
-I hit a small challenge with token generation - had to make sure they're random enough and can't be guessed.
+## Usage
+1. Register a new account at `/accounts/register`
+   - The first registered account automatically becomes an Admin
+   - Required fields: title, firstName, lastName, email, password, confirmPassword, acceptTerms
 
-### Login (Authentication)
-The authentication system uses two types of tokens:
-- A short-lived JWT token (15 minutes) for API access
-- A longer-lived refresh token (7 days) stored in an HTTP-only cookie
+2. Verify your email using the link sent to your inbox
+   - Submit the token received in your email to `/accounts/verify-email`
 
-This approach gives us good security while keeping users logged in. The refresh token can't be accessed by JavaScript (bye-bye XSS attacks!), and we use token rotation so each refresh token can only be used once.
+3. Log in at `/accounts/authenticate`
+   - Submit email and password
+   - Receive a JWT token valid for 15 minutes
+   - A refresh token (valid for 7 days) is set as an HTTP-only cookie
 
-If you're testing this and get a "token expired" error, just call the refresh-token endpoint to get a new JWT.
+4. Password Management
+   - Request password reset: `/accounts/forgot-password`
+   - Reset password with token: `/accounts/reset-password`
 
-### Password Reset Flow
-I've implemented a complete password reset flow:
+5. Account Management
+   - Get all accounts (Admin only): GET `/accounts`
+   - Get account by ID: GET `/accounts/:id`
+   - Create new account (Admin only): POST `/accounts`
+   - Update account: PUT `/accounts/:id`
+   - Delete account: DELETE `/accounts/:id`
 
-1. User requests password reset with their email (`/accounts/forgot-password`)
-2. If the email exists, a reset token is generated and sent by email
-3. User receives an email with a reset link/token valid for 24 hours
-4. User provides the token and new password (`/accounts/reset-password`)
-5. System verifies the token and updates the password
+## Testing
+### Functional Testing Results
+The backend API has been tested for the following functionality:
 
-The whole flow is designed to be secure - we don't reveal if an email exists in the system, and tokens expire after a set time.
+1. User Registration
+   - ✅ New users can register with valid information
+   - ✅ First user automatically receives Admin role
+   - ✅ Validation prevents incomplete/invalid registrations
+   - ✅ Duplicate email addresses are rejected
 
-### Email Notifications
-The system sends different emails for various actions:
-- Verification emails for new registrations
-- "Already registered" emails when someone tries to register with an existing email
-- Password reset emails with secure tokens
+2. Email Verification
+   - ✅ Verification emails are sent with valid tokens
+   - ✅ Accounts are properly marked as verified after token validation
+   - ✅ Invalid tokens are rejected
 
-Each email is properly formatted with HTML and contains clear instructions for the user.
+3. Authentication
+   - ✅ Valid credentials return JWT and refresh tokens
+   - ✅ Invalid credentials are rejected with appropriate error messages
+   - ✅ JWT tokens expire after 15 minutes
+   - ✅ Refresh tokens work to obtain new JWT tokens
+   - ✅ Refresh token rotation prevents token reuse
 
-## Security Considerations
-- Passwords are hashed using bcrypt with strong salting
-- JWT tokens expire after 15 minutes to limit damage from token theft
-- Refresh tokens use HTTP-only cookies to prevent XSS attacks
-- Token rotation ensures each refresh token can only be used once
-- Database queries use parameterized queries via Sequelize to prevent SQL injection
-- Error messages are intentionally vague to prevent information leakage
+4. Authorization
+   - ✅ Role-based access control functions as expected
+   - ✅ Admin users can access admin-only endpoints
+   - ✅ Regular users are restricted from admin functionality
+   - ✅ Users can only access their own account information
 
-## A few tips from my experience
-- When testing with Postman, remember to enable "cookies" in the settings to properly handle refresh tokens
-- If you're getting database connection errors, check that your MySQL service is running
-- The error messages are intentionally vague for security (e.g., "email or password is incorrect" instead of specifying which one)
-- For quick testing, I found that using an Ethereal email account saves a ton of time
-- Set the `alter: true` option in db.js to automatically update your database schema during development
+5. Password Management
+   - ✅ Password reset flow works end-to-end
+   - ✅ Reset tokens expire after 24 hours
+   - ✅ Passwords are properly hashed and verified
 
-## What to improve next
-- Add rate limiting to prevent brute force attacks
-- Set up proper logging for security audits
-- Maybe add social login options (Google, Facebook, etc.)
-- Implement account lockout after failed login attempts
-- Add two-factor authentication for enhanced security
+### Security Testing Results
+The API implements multiple security features:
 
-If you have any questions about my part of the implementation, feel free to reach out! Hope this helps you understand how the authentication system works.
+1. Authentication Security
+   - ✅ Passwords are hashed using bcrypt with strong salting
+   - ✅ JWT tokens expire after 15 minutes
+   - ✅ Refresh tokens use HTTP-only cookies to prevent XSS attacks
+   - ✅ Token rotation prevents refresh token reuse
 
-## Features
-- Email sign-up and verification
-- JWT authentication with refresh tokens
-- Role-based authorization (Admin and User roles)
-- Forgot password and reset password functionality
-- Account management (CRUD operations)
-- Swagger API documentation
+2. Data Protection
+   - ✅ Input validation prevents common injection attacks
+   - ✅ Database queries use parameterized statements via Sequelize
+   - ✅ Error messages are intentionally vague to prevent information leakage
+
+### Bug Fixes
+1. Fixed an issue with refresh token validation where active tokens were being incorrectly rejected
+   - Problem: The `getRefreshToken` function was checking for `refreshToken.isActive` when it should have been checking for `!refreshToken.isActive`
+   - Fix: Changed the condition to properly validate active tokens
+   
+2. Fixed controller function nesting issue in accounts.controller.js
+   - Problem: Functions like `validateResetToken` were incorrectly nested inside other functions
+   - Fix: Moved all controller functions to the top level scope for proper routing
+
+3. When testing with Postman:
+   - Make sure to enable cookies in Postman settings to properly handle refresh tokens
+   - If JWT token changes with every request, verify you're not hitting the authentication endpoint repeatedly
+   - For protected endpoints, use Bearer token authentication with the JWT token from login
+
+## Contributing
+### Git and GitHub Workflow
+1. Create a new branch for each feature or bugfix:
+   ```
+   git checkout -b feature/feature-name
+   ```
+   or
+   ```
+   git checkout -b fix/bug-name
+   ```
+
+2. Make small, focused commits with descriptive messages:
+   ```
+   git commit -m "Add email verification functionality"
+   ```
+
+3. Regularly pull changes from main to avoid conflicts:
+   ```
+   git pull origin main
+   ```
+
+4. Push your branch to GitHub:
+   ```
+   git push origin feature/feature-name
+   ```
+
+5. Create a pull request in GitHub for code review.
+
+6. After approval, merge the pull request into main.
+
+### Best Practices
+1. **Commit Often:** Make small, frequent commits with clear messages.
+2. **Use Descriptive Branch Names:** Name branches based on their purpose.
+3. **Review Code Before Merging:** Always review pull requests.
+4. **Keep Branches Updated:** Regularly pull from main.
+5. **Communicate with Your Team:** Use GitHub issues or comments to discuss tasks and updates.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
 
 ## Project Structure
 ```
@@ -151,91 +186,3 @@ backend/
 ├── server.js           # Server startup file
 └── swagger.yaml        # Swagger API documentation
 ```
-
-## Installation
-1. Install Node.js and npm from https://nodejs.org/
-2. Install MySQL Community Server from https://dev.mysql.com/downloads/mysql/
-3. Clone the repository
-4. Install dependencies:
-```
-npm install
-```
-5. Configure MySQL database settings in config.json
-6. Configure email SMTP settings in config.json
-7. Start the server:
-```
-npm start
-```
-
-## API Documentation
-Once the server is running, access the Swagger API documentation at:
-```
-http://localhost:4000/api-docs
-```
-
-## Development
-To start the server in development mode with automatic restarting:
-```
-npm run start:dev
-```
-
-## Implemented Features
-
-### Email Sign-Up
-The registration feature allows users to create accounts in the system. The first registered account automatically becomes an Admin, and subsequent registrations are assigned the User role.
-
-#### Implementation Details:
-- Registration endpoint: `POST /accounts/register`
-- Required fields: title, firstName, lastName, email, password, confirmPassword, acceptTerms
-- Password is securely hashed using bcrypt before storage
-- Verification token is generated and sent via email
-- Registration prevents duplicate email addresses
-
-#### Code Workflow:
-1. The controller receives the registration request (`accounts.controller.js`)
-2. Validation schema ensures all required fields are present (`registerSchema()`)
-3. Account service processes the registration (`account.service.js:register()`)
-4. Password is hashed for security
-5. Account is created in the database
-6. Verification email is sent to the user
-
-### Email Verification
-After registration, users must verify their email addresses before they can log in. This is done via a unique token sent to their email.
-
-#### Implementation Details:
-- Verification endpoint: `POST /accounts/verify-email`
-- Required field: token (received via email)
-- Verification marks the account as verified and allows login
-
-#### Code Workflow:
-1. User submits verification token from email
-2. Controller validates the token format (`verifyEmailSchema()`)
-3. Account service verifies the token (`verifyEmail()`)
-4. Upon successful verification, account is updated with verification timestamp
-5. User can now authenticate and access the system
-
-### Authentication
-The authentication system uses JWT tokens for securing API endpoints and stateless authentication.
-
-#### Implementation Details:
-- Authentication endpoint: `POST /accounts/authenticate`
-- Required fields: email, password
-- Upon successful authentication:
-  - Returns a JWT token (valid for 15 minutes)
-  - Sets a HTTP-only cookie with a refresh token (valid for 7 days)
-- Security features:
-  - JWT tokens are signed with a secret key
-  - Refresh tokens implement rotation (each use creates a new token)
-  - Password verification uses secure bcrypt comparison
-
-#### Code Workflow:
-1. User submits email and password
-2. Controller validates input format (`authenticateSchema()`)
-3. Account service authenticates the credentials (`authenticate()`)
-4. Passwords are compared using bcrypt
-5. JWT token and refresh token are generated
-6. Refresh token is saved to database and set as an HTTP-only cookie
-7. User details and JWT token are returned in the response
-
-### Refresh Token Mechanism
-The system implements token rotation for enhanced security. When a refresh token is used, it's revoked and replaced with a new one.

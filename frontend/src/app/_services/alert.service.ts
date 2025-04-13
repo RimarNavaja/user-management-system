@@ -6,7 +6,7 @@ import { Alert, AlertType } from "@app/_models";
 
 @Injectable({ providedIn: "root" })
 export class AlertService {
-  private subject: Subject<Alert>;
+  private subject = new Subject<Alert>();
   private defaultId = "default-alert";
 
   //enable subscribing to alerts observable

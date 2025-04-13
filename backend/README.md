@@ -94,19 +94,23 @@ The backend API has been tested for the following functionality:
    - ✅ Reset tokens expire after 24 hours
    - ✅ Passwords are properly hashed and verified
 
-### Security Testing Results
-The API implements multiple security features:
+## Security Testing Results (Tester 2)
 
-1. Authentication Security
-   - ✅ Passwords are hashed using bcrypt with strong salting
-   - ✅ JWT tokens expire after 15 minutes
-   - ✅ Refresh tokens use HTTP-only cookies to prevent XSS attacks
-   - ✅ Token rotation prevents refresh token reuse
+### ✅ Unauthorized Access
+- All protected endpoints correctly rejected unauthorized access.
+- Role-based access control confirmed.
 
-2. Data Protection
-   - ✅ Input validation prevents common injection attacks
-   - ✅ Database queries use parameterized statements via Sequelize
-   - ✅ Error messages are intentionally vague to prevent information leakage
+### ✅ SQL Injection
+- Input fields protected against SQL injections via ORM & validation.
+- Malicious payloads failed to compromise the database.
+
+### ✅ Cross-Site Scripting (XSS)
+- Angular frontend automatically escapes HTML.
+- User input with script tags or event handlers is rendered harmlessly.
+
+### Conclusion
+The system is resilient against basic common vulnerabilities. Recommend routine testing, code linting, and dependency audits for continued protection.
+
 
 ### Bug Fixes
 1. Fixed an issue with refresh token validation where active tokens were being incorrectly rejected

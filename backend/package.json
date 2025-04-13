@@ -1,7 +1,7 @@
 {
-    "name": "node-mysql-signup-verification-api",
+    "name": "user-management-system-api",
     "version": "1.0.0",
-    "description": "NodeJS and MySQL API for Email Sign Up with Verification, Authentication & Forgot Password",
+    "description": "NodeJS and MySQL API for User Management System with Authentication",
     "license": "MIT",
     "scripts": {
       "start": "node ./server.js",
@@ -12,16 +12,15 @@
       "body-parser": "^1.19.0",
       "cookie-parser": "^1.4.5",
       "cors": "^2.8.5",
-      "express-jwt": "^6.0.0",
       "express": "^4.17.1",
+      "express-jwt": "^6.0.0",
       "joi": "^17.2.1",
       "jsonwebtoken": "^8.5.1",
       "mysql2": "^2.1.0",
       "nodemailer": "^6.4.11",
       "rootpath": "^0.1.2",
       "sequelize": "^6.3.4",
-      "swagger-ui-express": "^4.1.4",
-      "yamljs": "^0.3.0"
+      "swagger-ui-express": "^4.1.4"
     },
     "devDependencies": {
       "nodemon": "^2.0.3"

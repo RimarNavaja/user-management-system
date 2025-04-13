@@ -284,7 +284,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
       if (!isAuthorized(Role.Admin)) return unauthorized();
 
       const account = body;
-      if (account.find((x) => x.email === account.email)) {
+      if (accounts.find((x) => x.email === account.email)) {
         return error(`Email "${account.email}" is already registered`);
       }
 
@@ -292,7 +292,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
       account.id = newAccountId();
       account.dateCreated = new Date().toISOString();
       account.isVerified = false;
-      account.refreshToken = [];
+      account.refreshTokens = [];
       accounts.push(account);
       localStorage.setItem(accountsKey, JSON.stringify(accounts));
 

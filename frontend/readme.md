@@ -12,6 +12,12 @@ This project provides a comprehensive boilerplate for an Angular application fea
    - Implement authentication system
    - Branch: `frontend-signup-auth`
 
+2. *Therese Andrei Arcenal* - Profile Management, Admin Dashboard, and Fake Backend
+   - Implement profile management system
+   - Implement admin dashboard
+   - Implement fake backend for development
+   - Branch: frontend-profile-admin-fake-backend
+
 
 ### Key Features
 
@@ -20,6 +26,14 @@ This project provides a comprehensive boilerplate for an Angular application fea
 - Email verification
 - Login/Logout
 - JWT token management
+
+### User Management (Developer 2)
+- Profile management
+- Admin dashboard
+- User list and management
+- Role-based access control
+- Fake backend implementation
+
 
 
 
@@ -85,6 +99,18 @@ http://localhost:4200
    - Use forgot password feature if needed
    - Automatic token refresh handling
 
+4. *User Features:* Logged-in users can:
+   - View the home page.
+   - Access their profile section to view details.
+   - Update their profile information (name, email, password).
+   - Log out.
+   - Use the forgot/reset password flow if needed.
+5. *Admin Features:* Users logged in with the Admin role can perform all user actions, plus:
+   - Access the Admin section.
+   - View a list of all registered user accounts.
+   - Create new user accounts.
+   - Edit existing user accounts.
+   - Delete user accounts.
 
 
 ## Testing

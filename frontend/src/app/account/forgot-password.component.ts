@@ -43,7 +43,7 @@ export class ForgotPasswordComponent implements OnInit {
     }
 
     this.loading = true;
-    this.accountService.clear();
+    this.alertService.clear();
     this.accountService
       .forgotPassword(this.f.email.value)
       .pipe(first())

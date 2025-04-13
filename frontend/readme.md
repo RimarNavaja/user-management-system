@@ -113,9 +113,28 @@ http://localhost:4200
    - Delete user accounts.
 
 
-## Testing
+## tester-functional-testing
 
-.............
+###  Registration
+ - Successful registration with valid data
+ -  Error on duplicate email
+
+
+### Login
+ - Successful login with correct credentials
+ - Error shown with wrong password
+
+
+### Profile Update
+ - Can update name and email
+ - Password change works
+
+
+### Admin Dashboard
+ - Admin can view all users
+ - Admin can delete users
+
+
 
 
 

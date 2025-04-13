@@ -4,7 +4,7 @@ export interface Account {
   id: string;
   title: string;
   firstName: string;
-  lastname: string;
+  lastName: string;
   email: string;
   role: Role;
   jwtToken?: string;
